@@ -78,7 +78,7 @@ echo json_encode($users);
 
 ```php
 // Get events.
-list($events, $err) = $this->memberclicks->getEvents();
+list($events, $err) = $memberclicks->getEvents();
 if ($err) {
     http_response_code(500);
     echo sprintf('Error getting MemberClicks events: %s', $err);
@@ -93,7 +93,7 @@ echo json_encode($users);
 
 ```php
 // Get event
-list($event, $err) = $this->memberclicks->getEvent('344420');
+list($event, $err) = $memberclicks->getEvent('344420');
 if ($err) {
     http_response_code(500);
     echo sprintf('Error getting MemberClicks event: %s', $err);
@@ -106,7 +106,7 @@ echo json_encode($event);
 
 ```php
 // Get event, alternate method.
-$event = new Event($this->memberclicks);
+$event = new Event($memberclicks);
 $event->eventId = '344420';
 if ($err = $event->load()) {
     http_response_code(500);
