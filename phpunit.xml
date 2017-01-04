@@ -1,0 +1,43 @@
+<phpunit
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://schema.phpunit.de/4.5/phpunit.xsd"
+         backupGlobals="true"
+         bootstrap="vendor/autoload.php"
+         backupStaticAttributes="false"
+         cacheTokens="false"
+         colors="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         forceCoversAnnotation="false"
+         mapTestClassNameToCoveredClassName="false"
+         printerClass="PHPUnit_TextUI_ResultPrinter"
+         processIsolation="false"
+         stopOnError="true"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         stopOnRisky="false"
+         testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader"
+         timeoutForSmallTests="1"
+         timeoutForMediumTests="10"
+         timeoutForLargeTests="60"
+         verbose="true">
+    <testsuites>
+        <testsuite name="User Test Suite">
+            <directory>src/BitolaCo/MemberClicks/</directory>
+            <file phpVersion="7.0">UserTest.php</file>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <log type="coverage-clover" target="coverage.xml"/>
+    </logging>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src/BitolaCo/MemberClicks</directory>
+            <exclude>
+                <directory suffix="Test.php">src/BitolaCo/MemberClicks</directory>
+            </exclude>
+        </whitelist>
+</filter>
+</phpunit>
