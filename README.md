@@ -8,12 +8,9 @@ Work in progress, don't use it quite yet.
 ### Example usage
 
 
-#### Initialize the client
+#### Initialize the client and get an auth token.
 
 ```php
-
-<?php
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use \BitolaCo\MemberClicks\MemberClicks;
@@ -25,13 +22,31 @@ $username = 'demouser';
 $password = 'demopass';
 
 $memberclicks = new MemberClicks($apiKey, $username, $password);
-list(, $err) = $memberclicks->init();
+list($token, $err) = $memberclicks->init();
 if ($err) {
     http_response_code(500);
     echo sprintf('Error getting MemeberClicks auth token: %s', $err);
     return;
 }
 ```
+
+#### Initialize the client if you already have an auth token
+
+```php
+require_once __DIR__ . '/vendor/autoload.php';
+
+use \BitolaCo\MemberClicks\MemberClicks;
+use \BitolaCo\MemberClicks\User;
+use \BitolaCo\MemberClicks\Event;
+
+$apiKey = '2406471784';
+$username = 'demouser';
+$password = 'demopass';
+
+$memberclicks = new MemberClicks($apiKey, $username, $password);
+$memberclicks->setToken('my-auth-token');
+```
+
 
 #### Get a single user
 

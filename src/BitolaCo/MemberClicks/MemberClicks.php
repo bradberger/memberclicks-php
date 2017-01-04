@@ -25,6 +25,10 @@ class MemberClicks {
         $this->endpoint = trim(rtrim($url, '/'));
     }
 
+    public function setToken(string $token) {
+        $this->token = $token;
+    }
+
     public function init(): array {
 
         if ($this->token) {
