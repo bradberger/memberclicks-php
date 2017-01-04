@@ -5,6 +5,23 @@
 
 Work in progress, don't use it quite yet.
 
+### Installation
+
+Install via composer
+
+```
+composer require bitolaco/memberclicks
+```
+
+Or add to your `composer.json` file:
+```json
+{
+    "require": {
+        "bitolaco/memberclicks": "*"
+    }
+}
+```
+
 ### Example usage
 
 
