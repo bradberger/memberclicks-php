@@ -2,57 +2,19 @@
 
 namespace BitolaCo\MemberClicks;
 
-class Event extends ClientObj
+use DateTime;
+
+class Event
 {
-
-    public $eventId;
-    public $orgId;
     public $name;
-    public $preview;
-    public $description;
-    public $startDate;
-    public $endDate;
-    public $location;
-    public $contactName;
-    public $contactPhone;
-    public $displayStartDate;
-    public $displayEndDate;
-    public $timeZoneId;
-    public $mapLocation;
-    public $submittedByName;
-    public $approved;
-    public $eventGroup;
-    public $recurringType;
-    public $numberOfIntervals;
-    public $monthOccurrence;
-    public $dayOfWeek;
-    public $recurringEndType;
-    public $recurringEndNumber;
-    public $recurringEndDate;
-    public $dayOfMonth;
-
-    public function load(): string
+    public $date;
+    public function __construct(Array $params = [])
     {
-        if (!$this->client) {
-            return 'Not initialized';
+        if (array_key_exists('date', $params)) {
+            $this->date = new DateTime($params['date']);
         }
-        if (!$this->eventId) {
-            return 'No event id';
+        if (array_key_exists('name', $params)) {
+            $this->name = $params['name'];
         }
-        list($event, $err) = $this->client->getEvent($this->eventId);
-        if ($err) {
-            return $err;
-        }
-        $this->copyAttrs((array) $event);
-        return '';
     }
-
-    public static function all(array $params = []): array
-    {
-        if (!$this->client) {
-            return 'Not initialized';
-        }
-        return $this->client->getEvents($params);
-    }
-
 }

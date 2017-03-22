@@ -7,185 +7,23 @@ use BitolaCo\MemberClicks\UserAttribute;
 
 class MemberClicks {
 
-    private $apiKey = '';
-    private $username = '';
-    private $password = '';
+    private $clientID, $clientSecret, $orgID;
     private $token = '';
-    private $endpoint = 'https://demo.memberclicks.net';
 
-    public function __construct(string $apiKey, string $username, string $password)
+    public function __construct(string $orgID, $clientID, $clientSecret)
     {
-        $this->apiKey = $apiKey;
-        $this->username = $username;
-        $this->password = $password;
-    }
-
-    public function setEndpoint(string $url)
-    {
-        $this->endpoint = trim(rtrim($url, '/'));
-    }
-
-    public function setToken(string $token) {
-        $this->token = $token;
-    }
-
-    public function init(): array {
-
-        if ($this->token) {
-            return [$this->token, ''];
-        }
-
-        $client = new HTTPClient();
-        list($data, $err) = $this->do('POST', '/services/auth', [
-            'apiKey' => $this->apiKey,
-            'username' => $this->username,
-            'password' => $this->password,
-        ]);
-        if ($err) {
-            return [$data, $err];
-        }
-
-        if (is_object($data)) {
-            $this->token = $data->token;
-        }
-        return [$this->token, ''];
-    }
-
-    public function getUser(string $userID, array $params = [])
-    {
-        list(, $err) = $this->init();
-        if ($err) {
-            return [null, $err];
-        }
-
-        list($data, $err) = $this->do('GET', sprintf('/services/user/%s', $userID));
-        return [new User($this, (array) $data), $err];
-    }
-
-    public function getUsers(array $params = []): array
-    {
-        list(, $err) = $this->init();
-        if ($err) {
-            return [null, $err];
-        }
-
-        list($data, $err) = $this->do('GET', '/services/user', $params);
-        if ($err) {
-            return [null, $err];
-        }
-
-        $users = [];
-        if (count($data->user)) {
-            foreach($data->user as $k => $u) {
-                $users[] = new User($this, (array) $u);
-            }
-        }
-        return [$users, ''];
-    }
-
-    public function getUserAttributes(string $userID): array
-    {
-        list(, $err) = $this->init();
-        if ($err) {
-            return [null, $err];
-        }
-
-        list($data, $err) = $this->do('GET', sprintf('/services/user/%s/attribute', $userID));
-        if ($err) {
-            return [null, $err];
-        }
-        if ($data === null) {
-            $data = [];
-        }
-        return [$data, ''];
-    }
-
-    public function getUserAttribute(string $userID, string $attributeID)
-    {
-        list(, $err) = $this->init();
-        if ($err) {
-            return [null, $err];
-        }
-
-        list($data, $err) = $this->do('get', sprintf('/services/user/%s/attribute/%s', $userID, $attributeID));
-        if ($err) {
-            return [null, $err];
-        }
-
-        return [new UserAttribute($this, (array) $data), ''];
-
-    }
-
-    public function getOrganizationName(): array
-    {
-        list($data, $err) = $this->do('GET', '/services/org/name');
-        return [$data, $err];
-    }
-
-    public function getEvent($eventID): array
-    {
-        list($data, $err) = $this->do('GET', sprintf('/services/event/%s', $eventID));
-        if ($err) {
-            return [null, $err];
-        }
-        return [new Event($this, (array) $data), ''];
-    }
-
-    public function getEvents(array $params = []): array
-    {
-        list($data, $err) = $this->do('GET', '/services/event');
-        if ($err) {
-            return [null, $err];
-        }
-        if (empty($data)) {
-            return [[], null];
-        }
-        $events = [];
-        foreach($data->eventList as $event) {
-            $events[] = new Event($this, (array) $event);
-        }
-        return [$events, ''];
-    }
-
-    public function getGroup($groupID): array
-    {
-        list($data, $err) = $this->do('GET', sprintf('/services/group/%s', $groupID));
-        if ($err) {
-            return [null, $err];
-        }
-        return [new Group($this, (array) $data), ''];
-    }
-
-    public function getGroups(array $params = []): array
-    {
-        list($data, $err) = $this->do('GET', '/services/group');
-        if ($err) {
-            return [null, $err];
-        }
-        if (empty($data)) {
-            return [[], null];
-        }
-        $groups = [];
-        // print_r($data);
-        foreach($data->group as $group) {
-            $groups[] = new Group($this, (array) $group);
-        }
-        return [$groups, ''];
-    }
-
-    public function setUserAttribute(UserAttribute $attr): array
-    {
-        list($data, $err) = $this->do('PUT', sprintf('/services/user/%s/attribute/%s', $attr->userId, $attr->attId), $attr->toArray());
-        return [$data, $err];
+        $this->orgID = $orgID;
+        $this->clientID = $clientID;
+        $this->clientSecret = $clientSecret;
     }
 
     private function do(string $method, string $url, array $params = [], array $headers = []): array
     {
         try {
             $method = strtoupper($method) ?: 'GET';
-            $requestParams = ['headers' => ['Accept' => 'application/json']];
-            if ($this->token) {
-                $requestParams['headers']['Authorization'] = $this->token;
+            $requestParams = ['headers' => ['Accept' => 'application/json']+$headers];
+            if ($this->token && $this->token->accessToken && !array_key_exists('Authorization', $headers)) {
+                $requestParams['headers']['Authorization'] = 'Bearer '.$this->token->accessToken;
             }
             if (($method === 'POST') && count($params)) {
                 $requestParams['form_params'] = $params;
@@ -211,8 +49,60 @@ class MemberClicks {
         }
     }
 
+    // auth gets a Client Credentials Grant Type auth token. It returns an AccessToken and error
+    public function auth(string $scope = 'read'): array
+    {
+        list($data, $err) = $this->do(
+            'POST',
+            '/oauth/v1/token',
+            ['grant_type' => 'client_credentials', 'scope' => 'read'],
+            ['Authorization' => 'Basic '.base64_encode(sprintf('%s:%s', $this->clientID, $this->clientSecret))]
+        );
+        if ($err) {
+            return [null, $err];
+        }
+        $this->token = new AccessToken((array) $data);
+        return [$this->token, null];
+    }
+
+    public function resourceOwnerToken(string $username, string $password, string $scope = 'read'): array
+    {
+        list($data, $err) = $this->do('POST', '/api/v1/token', [
+            'grant_type' => 'refresh_token',
+            'scope' => $scope,
+            'username' => $username,
+            'password' => $password,
+        ], ['Authorization' => $this->getBasicAuthStr()]);
+        if ($err) {
+            return [null, $err];
+        }
+        return [new Token((array) $data), null];
+    }
+
+    public function checkLogin(string $username, string $password): boolean
+    {
+        list(, $err) = $this->resourceOwnerToken($username, $password);
+        return empty($err);
+    }
+
+    public function events(): array
+    {
+        list($data, $err) = $this->do('GET', '/api/v1/event');
+        if ($err) {
+            return [null, $err];
+        }
+        return [array_map(function($event) {
+            return new Event((array) $event);
+        }, $data->events), null];
+    }
+
+    private function getBasicAuthStr()
+    {
+        return 'Basic '.base64_encode(sprintf('%s:%s', $this->clientID, $this->clientSecret));
+    }
+
     private function makeURL(string $url): string
     {
-        return sprintf('%s/%s', trim(rtrim($this->endpoint, '/')), trim(ltrim($url, '/')));
+        return sprintf('https://%s.memberclicks.net/%s', $this->orgID, trim(ltrim($url, '/')));
     }
 }
