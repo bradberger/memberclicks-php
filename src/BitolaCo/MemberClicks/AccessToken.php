@@ -2,6 +2,7 @@
 
 namespace BitolaCo\MemberClicks;
 
+use \JsonSerializable;
 /*
 {
   "access_token": <accessToken>,
@@ -13,7 +14,7 @@ namespace BitolaCo\MemberClicks;
   "jti": <jti>
 }
 */
-class AccessToken {
+class AccessToken implements JsonSerializable {
 
     public $attributes;
 
@@ -41,24 +42,36 @@ class AccessToken {
         }
     }
 
+    public function jsonSerialize() {
+        return $this->attributes;
+    }
+
     public function getAttrKey(string $name): string {
-        switch (str_replace(['_', ' '], '', strtolower($name))) {
-        case "accesstoken":
+        switch ($name) {
+        case "access_token":
+        case "accessToken":
             return "access_token";
-        case "tokentype":
+        case "token_type":
+        case "tokenType":
             return "token_type";
-        case "expiresin":
+        case "expires_in":
+        case "expiresIn":
             return "expires_in";
         case "scope":
             return "scope";
+        case "service_id":
         case "serviceId":
             return "service_id";
-        case "userid":
+        case "user_id":
+        case "userId":
             return "user_id";
+        case "refresh_token":
+        case "refreshToken":
+            return "refresh_token";
         case "jti":
             return "jti";
         default:
-            return "";
+            return $name;
         }
     }
 }

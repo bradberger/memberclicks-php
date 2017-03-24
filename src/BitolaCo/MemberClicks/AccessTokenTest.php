@@ -2,13 +2,12 @@
 
 namespace BitolaCo\MemberClicks;
 
-use PHPUnit\Framework\TestCase;
-
-class AccessTokenTest extends TestCase
+class AccessTokenTest extends BaseTest
 {
     var $token;
 
     function setUp() {
+        parent::setUp();
         $this->token = new AccessToken();
     }
 

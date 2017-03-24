@@ -2,7 +2,7 @@
 
 namespace BitolaCo\MemberClicks;
 
-class ClientObjTest extends BaseTest
+class EventTest extends BaseTest
 {
 
 }
