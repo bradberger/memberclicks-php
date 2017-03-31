@@ -28,4 +28,10 @@ class AccessTokenTest extends BaseTest
         $this->assertEquals('token_type', $this->token->getAttrKey('token_type'));
         $this->assertEquals('token_type', $this->token->getAttrKey('tokenType'));
     }
+
+    function testJsonSerialize()
+    {
+        $token = new AccessToken(['access_token'=>'abc']);
+        $this->assertEquals('{"access_token":"abc"}', json_encode($token));
+    }
 }
