@@ -114,6 +114,15 @@ class MemberClicks {
         return [new Profile((array) $data), null];
     }
 
+    public function profile(string $profileID): array
+    {
+        list($data, $err) = $this->do('GET', '/api/v1/profile/'.$profileID);
+        if ($err) {
+            return [null, $err];
+        }
+        return [new Profile((array) $data), null];
+    }
+
     public function resourceOwnerToken(string $username, string $password, string $scope = 'read'): array
     {
         list($data, $err) = $this->do('POST', '/oauth/v1/token', [
