@@ -117,7 +117,7 @@ class MemberClicks {
     public function resourceOwnerToken(string $username, string $password, string $scope = 'read'): array
     {
         list($data, $err) = $this->do('POST', '/oauth/v1/token', [
-            'grant_type' => 'refresh_token',
+            'grant_type' => 'password',
             'scope' => $scope,
             'username' => $username,
             'password' => $password,
@@ -128,7 +128,7 @@ class MemberClicks {
         return [new AccessToken((array) $data), null];
     }
 
-    public function checkLogin(string $username, string $password): boolean
+    public function checkLogin(string $username, string $password): bool
     {
         list(, $err) = $this->resourceOwnerToken($username, $password);
         return empty($err);
