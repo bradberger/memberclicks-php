@@ -53,7 +53,7 @@ class MemberClicksTest extends BaseTest
     {
         list($profile, $err) = $this->memberclicks->me(getenv('MEMBERCLICKS_USER_USERNAME'), getenv('MEMBERCLICKS_USER_PASSWORD'));
         $this->assertNull($err);
-        $this->assertEquals(1002625212, $profile->profile_id);
+        $this->assertEquals(getenv("MEMBERCLICKS_USER_ID"), $profile->profile_id);
     }
 
     /**
