@@ -143,6 +143,16 @@ class MemberClicks {
         return empty($err);
     }
 
+    // me returns the profile for the user with the given username/password combination
+    public function me(string $username, string $password): array
+    {
+        list($token, $err) = $this->resourceOwnerToken($username, $password);
+        if ($err) {
+            return [null, $err];
+        }
+        return $this->getUserFromToken($token);
+    }
+
     public function memberTypes(string $typeFilter=''): array
     {
         list($data, $err) = $this->do('GET', '/api/v1/member-type');

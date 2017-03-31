@@ -46,6 +46,19 @@ class MemberClicksTest extends BaseTest
         $this->assertEquals($profile->profile_id, $profile2->profile_id);
     }
 
+    /**
+     * @depends testAuth
+     */
+    public function testMe()
+    {
+        list($profile, $err) = $this->memberclicks->me(getenv('MEMBERCLICKS_USER_USERNAME'), getenv('MEMBERCLICKS_USER_PASSWORD'));
+        $this->assertNull($err);
+        $this->assertEquals(1002625212, $profile->profile_id);
+    }
+
+    /**
+     * @depends testAuth
+     */
     public function testCheckLogin()
     {
         $this->assertTrue($this->memberclicks->checkLogin(getenv('MEMBERCLICKS_USER_USERNAME'), getenv('MEMBERCLICKS_USER_PASSWORD')));
