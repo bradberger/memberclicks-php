@@ -13,9 +13,13 @@ class AccessTokenTest extends BaseTest
 
     function testAttributesMagicMethods() {
         $this->token->access_token = "foobar";
+        $this->token->refreshToken = "foobar";
+
         $this->assertEquals('foobar', $this->token->attributes['access_token']);
         $this->assertEquals('foobar', $this->token->access_token);
         $this->assertEquals('foobar', $this->token->accessToken);
+        $this->assertEquals('foobar', $this->token->refresh_token);
+        $this->assertEquals(null, $this->token->somethingInvalid);
     }
 
     function testGetAttrKey() {

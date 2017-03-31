@@ -3,17 +3,7 @@
 namespace BitolaCo\MemberClicks;
 
 use \JsonSerializable;
-/*
-{
-  "access_token": <accessToken>,
-  "token_type": <tokenType>,
-  "expires_in": <expiresIn>,
-  "scope": <scope>,
-  "serviceId": <serviceId>,
-  "userId": <userId>,
-  "jti": <jti>
-}
-*/
+
 class AccessToken implements JsonSerializable {
 
     public $attributes;
