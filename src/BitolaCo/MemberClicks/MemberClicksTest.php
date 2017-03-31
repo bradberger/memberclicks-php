@@ -64,4 +64,15 @@ class MemberClicksTest extends BaseTest
         $this->assertTrue($this->memberclicks->checkLogin(getenv('MEMBERCLICKS_USER_USERNAME'), getenv('MEMBERCLICKS_USER_PASSWORD')));
     }
 
+    /**
+     * @depends testAuth
+     */
+    public function testProfiles()
+    {
+        list($profiles, $err) = $this->memberclicks->profiles();
+        $this->assertNull($err);
+        $this->assertTrue(count($profiles) > 1);
+        $this->assertEquals(50, count($profiles));
+    }
+
 }

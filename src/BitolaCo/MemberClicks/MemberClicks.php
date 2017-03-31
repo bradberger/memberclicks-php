@@ -8,7 +8,7 @@ use BitolaCo\MemberClicks\UserAttribute;
 class MemberClicks {
 
     private $clientID, $clientSecret, $orgID;
-    private $token = '';
+    public $token = '';
 
     public function __construct(string $orgID, $clientID, $clientSecret)
     {
@@ -220,6 +220,65 @@ class MemberClicks {
         return [array_filter($events, function($event) use ($now) {
             return $event->date->getTimestamp() < $now;
         }), null];
+    }
+
+    // formatProfiles takes a array of stdObject profiles and returns an array of Profile objects.
+    // If the memberType and onlyActive are set it will filter based on those parameters as well.
+    private function formatProfiles(Array $profiles, $memberType = '', $onlyActive = false): array {
+        return array_values(array_filter(array_map(function($profile) {
+            return new Profile((array) $profile);
+        }, $profiles), function($profile) use ($memberType, $onlyActive) {
+            if ($memberType && $profile->member_type != $memberType) {
+                return false;
+            }
+            if ($onlyActive && $profile->member_status !== 'Active') {
+                return false;
+            }
+            return true;
+        }));
+    }
+
+    // profileCount returns the total number of profiles. Useful for pagination, etc.
+    public function profileCount()
+    {
+        list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$start);
+        if ($err) {
+            return [null, $err];
+        }
+        return [$data->totalPageCount, null];
+    }
+
+    // Profiles returns all profiles which match the criteria. Each page (per memberclicks) is 10
+    // profiles, so take that into account when using start and limit.
+    public function profiles($memberType = '', $onlyActive = true, int $start = 1, int $limit = 5)
+    {
+        // Get first set of profiles to determine number of pages.
+        list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$start);
+        if ($err) {
+            return [null, $err];
+        }
+        $profiles = $this->formatProfiles($data->profiles);
+
+        // If there are more pages then the page we started on, then continue getting
+        // them up to the limit of pages allowed.
+        if ($data->totalPageCount > $start) {
+
+            // Number of pages to get. If no limit, do the total number of pages.
+            // If there is a limit, do the smaller amount between the total number
+            // of pages and the limit.
+            $pages = $limit ? min($start+$limit, $data->totalPageCount+1) : $data->totalPageCount+1;
+            for ($i = $start+1; $i < $pages; $i++) {
+                list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$i);
+                if ($err) {
+                    return [$profiles, $err];
+                }
+                foreach($this->formatProfiles($data->profiles) as $profile) {
+                    array_push($profiles, $profile);
+                }
+            }
+        }
+
+        return [$profiles, null];
     }
 
     private function getBasicAuthStr()
