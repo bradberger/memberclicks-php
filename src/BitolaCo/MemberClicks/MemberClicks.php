@@ -20,21 +20,34 @@ class MemberClicks {
     private function do($method, $url, array $params = [], array $headers = [])
     {
         try {
-            $method = strtoupper($method) ?: 'GET';
             $requestParams = ['headers' => ['Accept' => 'application/json']+$headers];
             if ($this->token && $this->token->accessToken && !array_key_exists('Authorization', $headers)) {
                 $requestParams['headers']['Authorization'] = 'Bearer '.$this->token->accessToken;
             }
-            if (($method === 'POST') && count($params)) {
-                $requestParams['form_params'] = $params;
-            } else if ($method === 'GET' && count($params)) {
-                $requestParams['query'] = $params;
-            } else if ($method === 'PUT' && count($params)) {
-                $requestParams['json'] = $params;
-            }
 
             $client = new HTTPClient();
-            $res = $client->request($method, $this->makeURL($url), $requestParams);
+            $url = $this->makeURL($url);
+
+            switch (strtoupper($method)) {
+            case "PUT":
+                if (!empty($params)) {
+                    $requestParams['json'] = $params;
+                }
+                $res = $client->put($url, $requestParams);
+                break;
+            case "POST":
+                if (!empty($params)) {
+                    $requestParams['body'] = $params;
+                }
+                $res = $client->post($url, $requestParams);
+                break;
+            default:
+                if (!empty($params)) {
+                    $requestParams['query'] = $params;
+                }
+                $res = $client->get($url, $requestParams);
+                break;
+            }
 
             switch ((int) $res->getStatusCode()) {
             case 204:
