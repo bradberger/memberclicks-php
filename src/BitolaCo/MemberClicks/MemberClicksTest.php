@@ -72,7 +72,6 @@ class MemberClicksTest extends BaseTest
         list($profiles, $err) = $this->memberclicks->profiles();
         $this->assertNull($err);
         $this->assertTrue(count($profiles) > 1);
-        $this->assertEquals(50, count($profiles));
     }
 
 }

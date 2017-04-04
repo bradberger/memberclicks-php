@@ -26,7 +26,7 @@
     <testsuites>
         <testsuite name="User Test Suite">
             <directory>src/BitolaCo/MemberClicks/</directory>
-            <file phpVersion="7.0">UserTest.php</file>
+            <file phpVersion="5.4">UserTest.php</file>
         </testsuite>
     </testsuites>
     <logging>

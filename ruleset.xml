@@ -17,9 +17,9 @@
         </properties>
     </rule>
 
-    <!-- Import entire naming rule set and exclude rules -->
     <rule ref="rulesets/naming.xml">
         <exclude name="ShortVariable" />
         <exclude name="LongVariable" />
+        <exclude name="ShortMethodName" />
     </rule>
 </ruleset>

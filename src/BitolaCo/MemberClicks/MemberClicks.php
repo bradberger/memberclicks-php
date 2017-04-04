@@ -17,7 +17,7 @@ class MemberClicks {
         $this->clientSecret = $clientSecret;
     }
 
-    private function do($method, $url, array $params = [], array $headers = [])
+    private function send($method, $url, array $params = [], array $headers = [])
     {
         try {
             $requestParams = ['headers' => ['Accept' => 'application/json']+$headers];
@@ -65,10 +65,10 @@ class MemberClicks {
     // auth gets a Client Credentials Grant Type auth token. It returns an AccessToken and error
     public function auth($scope = 'read')
     {
-        list($data, $err) = $this->do(
+        list($data, $err) = $this->send(
             'POST',
             '/oauth/v1/token',
-            ['grant_type' => 'client_credentials', 'scope' => 'read'],
+            ['grant_type' => 'client_credentials', 'scope' => $scope],
             ['Authorization' => 'Basic '.base64_encode(sprintf('%s:%s', $this->clientID, $this->clientSecret))]
         );
         if ($err) {
@@ -103,10 +103,11 @@ class MemberClicks {
     // @see https://help.memberclicks.com/hc/en-us/articles/230536287-API-Authorization
     public function getTokenFromAuthCode($authCode, $redirectURI = '', $scope = 'read', $state = '')
     {
-        list($data, $err) = $this->do('POST', '/oauth/v1/token', [
+        list($data, $err) = $this->send('POST', '/oauth/v1/token', [
             'grant_type' => 'authorization_code',
             'code' => $authCode,
             'scope' => $scope,
+            'state' => $state,
             'redirect_uri' => $redirectURI
         ], ['Authorization' => $this->getBasicAuthStr()]);
         if ($err) {
@@ -118,7 +119,7 @@ class MemberClicks {
 
     public function getUserFromToken(AccessToken $token)
     {
-        list($data, $err) = $this->do('GET', '/api/v1/profile/me', [], [
+        list($data, $err) = $this->send('GET', '/api/v1/profile/me', [], [
             'Authorization' => 'Bearer '.$token->access_token
         ]);
         if ($err) {
@@ -129,7 +130,7 @@ class MemberClicks {
 
     public function profile($profileID)
     {
-        list($data, $err) = $this->do('GET', '/api/v1/profile/'.$profileID);
+        list($data, $err) = $this->send('GET', '/api/v1/profile/'.$profileID);
         if ($err) {
             return [null, $err];
         }
@@ -138,7 +139,7 @@ class MemberClicks {
 
     public function resourceOwnerToken($username, $password, $scope = 'read')
     {
-        list($data, $err) = $this->do('POST', '/oauth/v1/token', [
+        list($data, $err) = $this->send('POST', '/oauth/v1/token', [
             'grant_type' => 'password',
             'scope' => $scope,
             'username' => $username,
@@ -168,7 +169,7 @@ class MemberClicks {
 
     public function memberTypes($typeFilter='')
     {
-        list($data, $err) = $this->do('GET', '/api/v1/member-type');
+        list($data, $err) = $this->send('GET', '/api/v1/member-type');
         if ($err) {
             return [null, $err];
         }
@@ -189,7 +190,7 @@ class MemberClicks {
 
     public function events($desc = false)
     {
-        list($data, $err) = $this->do('GET', '/api/v1/event');
+        list($data, $err) = $this->send('GET', '/api/v1/event');
         if ($err) {
             return [null, $err];
         }
@@ -252,9 +253,9 @@ class MemberClicks {
     }
 
     // profileCount returns the total number of profiles. Useful for pagination, etc.
-    public function profileCount()
+    public function profileCount($start=1)
     {
-        list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$start);
+        list($data, $err) = $this->send('GET', '/api/v1/profile?pageNumber='.$start);
         if ($err) {
             return [null, $err];
         }
@@ -266,11 +267,11 @@ class MemberClicks {
     public function profiles($memberType = '', $onlyActive = true, $start = 1, $limit = 5)
     {
         // Get first set of profiles to determine number of pages.
-        list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$start);
+        list($data, $err) = $this->send('GET', '/api/v1/profile?pageNumber='.$start);
         if ($err) {
             return [null, $err];
         }
-        $profiles = $this->formatProfiles($data->profiles);
+        $profiles = $this->formatProfiles($data->profiles, $memberType, $onlyActive);
 
         // If there are more pages then the page we started on, then continue getting
         // them up to the limit of pages allowed.
@@ -281,7 +282,7 @@ class MemberClicks {
             // of pages and the limit.
             $pages = $limit ? min($start+$limit, $data->totalPageCount+1) : $data->totalPageCount+1;
             for ($i = $start+1; $i < $pages; $i++) {
-                list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$i);
+                list($data, $err) = $this->send('GET', '/api/v1/profile?pageNumber='.$i);
                 if ($err) {
                     return [$profiles, $err];
                 }
