@@ -1,5 +1,6 @@
 vendor/
 coverage.xml
+composer.lock
 .fsw.yml
 .env
 .env*
