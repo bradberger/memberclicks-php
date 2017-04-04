@@ -10,14 +10,14 @@ class MemberClicks {
     private $clientID, $clientSecret, $orgID;
     public $token = '';
 
-    public function __construct(string $orgID, $clientID, $clientSecret)
+    public function __construct($orgID, $clientID, $clientSecret)
     {
         $this->orgID = $orgID;
         $this->clientID = $clientID;
         $this->clientSecret = $clientSecret;
     }
 
-    private function do(string $method, string $url, array $params = [], array $headers = []): array
+    private function do($method, $url, array $params = [], array $headers = [])
     {
         try {
             $method = strtoupper($method) ?: 'GET';
@@ -50,7 +50,7 @@ class MemberClicks {
     }
 
     // auth gets a Client Credentials Grant Type auth token. It returns an AccessToken and error
-    public function auth(string $scope = 'read'): array
+    public function auth($scope = 'read')
     {
         list($data, $err) = $this->do(
             'POST',
@@ -68,7 +68,7 @@ class MemberClicks {
     // requestAuthCode implements the first step of the "Authorization Code grant type"
     // @see https://help.memberclicks.com/hc/en-us/articles/230536287-API-Authorization
     // It returns a properly formatted link for redirection
-    public function requestAuthCode(string $redirectURI = '', string $scope = 'read', string $state = '', bool $redirect = false): string
+    public function requestAuthCode($redirectURI = '', $scope = 'read', $state = '', $redirect = false)
     {
         $url = sprintf(
             'https://%s.memberclicks.net/oauth/v1/authorize?response_type=code&client_id=%s&scope=%s&state=%s&redirect_uri=%s',
@@ -88,7 +88,7 @@ class MemberClicks {
 
     // parseAuthCode implements the second step of the "Authorization Code grant type"
     // @see https://help.memberclicks.com/hc/en-us/articles/230536287-API-Authorization
-    public function getTokenFromAuthCode(string $authCode, string $redirectURI = '', string $scope = 'read', string $state = ''): array
+    public function getTokenFromAuthCode($authCode, $redirectURI = '', $scope = 'read', $state = '')
     {
         list($data, $err) = $this->do('POST', '/oauth/v1/token', [
             'grant_type' => 'authorization_code',
@@ -103,7 +103,7 @@ class MemberClicks {
         return [new AccessToken((array) $data), null];
     }
 
-    public function getUserFromToken(AccessToken $token): array
+    public function getUserFromToken(AccessToken $token)
     {
         list($data, $err) = $this->do('GET', '/api/v1/profile/me', [], [
             'Authorization' => 'Bearer '.$token->access_token
@@ -114,7 +114,7 @@ class MemberClicks {
         return [new Profile((array) $data), null];
     }
 
-    public function profile(string $profileID): array
+    public function profile($profileID)
     {
         list($data, $err) = $this->do('GET', '/api/v1/profile/'.$profileID);
         if ($err) {
@@ -123,7 +123,7 @@ class MemberClicks {
         return [new Profile((array) $data), null];
     }
 
-    public function resourceOwnerToken(string $username, string $password, string $scope = 'read'): array
+    public function resourceOwnerToken($username, $password, $scope = 'read')
     {
         list($data, $err) = $this->do('POST', '/oauth/v1/token', [
             'grant_type' => 'password',
@@ -137,14 +137,14 @@ class MemberClicks {
         return [new AccessToken((array) $data), null];
     }
 
-    public function checkLogin(string $username, string $password): bool
+    public function checkLogin($username, $password)
     {
         list(, $err) = $this->resourceOwnerToken($username, $password);
         return empty($err);
     }
 
     // me returns the profile for the user with the given username/password combination
-    public function me(string $username, string $password): array
+    public function me($username, $password)
     {
         list($token, $err) = $this->resourceOwnerToken($username, $password);
         if ($err) {
@@ -153,7 +153,7 @@ class MemberClicks {
         return $this->getUserFromToken($token);
     }
 
-    public function memberTypes(string $typeFilter=''): array
+    public function memberTypes($typeFilter='')
     {
         list($data, $err) = $this->do('GET', '/api/v1/member-type');
         if ($err) {
@@ -174,7 +174,7 @@ class MemberClicks {
         return [$types, null];
     }
 
-    public function events(bool $desc = false): array
+    public function events($desc = false)
     {
         list($data, $err) = $this->do('GET', '/api/v1/event');
         if ($err) {
@@ -197,7 +197,7 @@ class MemberClicks {
     }
 
     // futureEvents returns all events which are in the future.
-    public function futureEvents(bool $desc = false)
+    public function futureEvents($desc = false)
     {
         list($events, $err) = $this->events($desc);
         if ($err) {
@@ -210,7 +210,7 @@ class MemberClicks {
     }
 
     // pastEvents returns all events which are in the past
-    public function pastEvents(bool $desc = false)
+    public function pastEvents($desc = false)
     {
         list($events, $err) = $this->events($desc);
         if ($err) {
@@ -224,7 +224,7 @@ class MemberClicks {
 
     // formatProfiles takes a array of stdObject profiles and returns an array of Profile objects.
     // If the memberType and onlyActive are set it will filter based on those parameters as well.
-    private function formatProfiles(Array $profiles, $memberType = '', $onlyActive = false): array {
+    private function formatProfiles(Array $profiles, $memberType = '', $onlyActive = false) {
         return array_values(array_filter(array_map(function($profile) {
             return new Profile((array) $profile);
         }, $profiles), function($profile) use ($memberType, $onlyActive) {
@@ -250,7 +250,7 @@ class MemberClicks {
 
     // Profiles returns all profiles which match the criteria. Each page (per memberclicks) is 10
     // profiles, so take that into account when using start and limit.
-    public function profiles($memberType = '', $onlyActive = true, int $start = 1, int $limit = 5)
+    public function profiles($memberType = '', $onlyActive = true, $start = 1, $limit = 5)
     {
         // Get first set of profiles to determine number of pages.
         list($data, $err) = $this->do('GET', '/api/v1/profile?pageNumber='.$start);
@@ -286,7 +286,7 @@ class MemberClicks {
         return 'Basic '.base64_encode(sprintf('%s:%s', $this->clientID, $this->clientSecret));
     }
 
-    private function makeURL(string $url): string
+    private function makeURL($url)
     {
         return sprintf('https://%s.memberclicks.net/%s', $this->orgID, trim(ltrim($url, '/')));
     }

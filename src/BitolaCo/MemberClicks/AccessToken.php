@@ -16,7 +16,7 @@ class AccessToken implements JsonSerializable {
         }
     }
 
-    function __get(string $name)
+    function __get($name)
     {
         $key = $this->getAttrKey($name);
         if (array_key_exists($key, $this->attributes)) {
@@ -25,7 +25,7 @@ class AccessToken implements JsonSerializable {
         return null;
     }
 
-    public function __set(string $name, $value)
+    public function __set($name, $value)
     {
         if ($key = $this->getAttrKey($name)) {
             $this->attributes[$key] = $value;
@@ -36,7 +36,7 @@ class AccessToken implements JsonSerializable {
         return $this->attributes;
     }
 
-    public function getAttrKey(string $name): string {
+    public function getAttrKey($name) {
         switch ($name) {
         case "access_token":
         case "accessToken":

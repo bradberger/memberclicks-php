@@ -18,12 +18,12 @@ class Profile implements JsonSerializable {
         }
     }
 
-    function __get(string $name)
+    function __get($name)
     {
-        return $this->attributes[$this->normalizeKey($name)] ?? null;
+        return array_key_exists($this->normalizeKey($name), $this->attributes) ? $this->attributes[$this->normalizeKey($name)] : null;
     }
 
-    public function __set(string $name, $value)
+    public function __set($name, $value)
     {
         $this->attributes[$this->normalizeKey($name)] = $value;
     }
@@ -32,7 +32,7 @@ class Profile implements JsonSerializable {
         return $this->attributes;
     }
 
-    private function normalizeKey(string $key): string
+    private function normalizeKey($key)
     {
         $key = strtolower(trim($key, '[] .-_?*'));
         $key = str_replace([' | ', ' '], '_', $key);

@@ -21,12 +21,12 @@ class Event
         }
     }
 
-    public function key(): string
+    public function key()
     {
         return strtolower(str_replace(' ', '-', preg_replace('/[^0-9A-Za-z -]+/', '', $this->name) ?: ''));
     }
 
-    public function getId(): string
+    public function getId()
     {
         return hash(self::$hashAlgorithm, $this->name);
     }

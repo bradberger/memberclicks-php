@@ -4,7 +4,7 @@
     "keywords": ["memberclicks", "rest", "client", "HTTP client"],
     "type": "library",
     "require": {
-        "php": ">=7",
+        "php": ">=5.4",
         "guzzlehttp/guzzle": "~6"
     },
     "require-dev": {
